@@ -1,37 +1,86 @@
+#include <stdarg.h>
 #include "main.h"
+#include <stddef.h>
+
 /**
- *_printf - prints a string to stdout
- *
- * @format: string that is passed with specifiers
- *
- * Return: Returns length of string
+ * get_op - select function for conversion char
+ * @c: char to check
+ * Return: pointer to function
  */
+
+int (*get_op(const char c))(va_list)
+{
+	int i = 0;
+
+	flags_p fp[] = {
+		{"c", print_char},
+		{"s", print_str},
+		{"i", print_nbr},
+		{"d", print_nbr},
+		{"b", print_binary},
+		{"o", print_octal},
+		{"x", print_hexa_lower},
+		{"X", print_hexa_upper},
+		{"u", print_unsigned},
+		{"S", print_str_unprintable},
+		{"r", print_str_reverse},
+		{"p", print_ptr},
+		{"R", print_rot13},
+		{"%", print_percent}
+	};
+	while (i < 14)
+	{
+		if (c == fp[i].c[0])
+		{
+			return (fp[i].f);
+		}
+		i++;
+	}
+	return (NULL);
+}
+
+/**
+ * _printf - Reproduce behavior of printf function
+ * @format: format string
+ * Return: value of printed chars
+ */
+
 int _printf(const char *format, ...)
 {
-	int i, in_length = 0;
-	va_list arg_list;
+	va_list ap;
+	int sum = 0, i = 0;
+	int (*func)();
 
-	va_start(arg_list, format);
-	if (format == NULL)
+	if (!format || (format[0] == '%' && format[1] == '\0'))
 		return (-1);
-	for (i = 0; format[i] != '\0'; i++)
+	va_start(ap, format);
+
+	while (format[i])
 	{
 		if (format[i] == '%')
 		{
-			if (format[i + 1] == 'c' || format[i + 1] == 's' ||
-			format[i + 1] == 'r' || format[i + 1] == 'R' ||
-			format[i + 1] == '%')
-				in_length = switch_char(arg_list, format[i + 1], in_length);
-			else if (format[i + 1] != '\0')
-				in_length = switch_num(arg_list, format[i + 1], in_length);
-			i++;
+			if (format[i + 1] != '\0')
+				func = get_op(format[i + 1]);
+			if (func == NULL)
+			{
+				_putchar(format[i]);
+				sum++;
+				i++;
+			}
+			else
+			{
+				sum += func(ap);
+				i += 2;
+				continue;
+			}
 		}
 		else
 		{
 			_putchar(format[i]);
-			in_length++;
+			sum++;
+			i++;
 		}
 	}
-	va_end(arg_list);
-	return (in_length);
+	va_end(ap);
+	return (sum);
 }
