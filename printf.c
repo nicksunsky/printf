@@ -16,7 +16,7 @@ int (*conv_char(const char c))(va_list)
 		{"c", print_char},
 		{"s", print_string},
 		{"d", print_number},
-    {"i", print_number},
+   	        {"i", print_number},
 		{"%", print_percent}
 	};
 	while (i < 14)
